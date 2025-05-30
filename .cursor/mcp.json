@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "phone-calls": {
+      "command": "bun",
+      "args": ["run", "/home/teemu/code/node/call-mcp/src/index.ts"]
+    },
+    "test": {
+      "command": "tee",
+      "args": ["/home/teemu/code/node/call-mcp/filename.txt"]
+    }
+  }
+}

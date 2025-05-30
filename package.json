@@ -1,0 +1,24 @@
+{
+  "name": "call-mcp",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@browserbasehq/mcp": "^1.0.5",
+    "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "ai": "^4.3.16",
+    "dotenv": "^16.5.0",
+    "zod": "^3.25.42",
+    "node-fetch": "^3.3.2"
+  }
+}
