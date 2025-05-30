@@ -1,7 +1,8 @@
+import "dotenv/config";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { queryPerplexityForPhoneNumbers } from "./plx";
+import { queryPerplexityForPhoneNumbers } from "./plx.js";
 
 // Create an MCP server
 const server = new McpServer({
@@ -21,19 +22,13 @@ server.tool("findPhoneNumbers", { prompt: z.string() }, async ({ prompt }) => {
       openaiApiKey
     );
 
-    console.log("Extracted phone numbers:", result.phoneNumbers);
-    console.log(
-      "Source text preview:",
-      result.source.substring(0, 200) + "..."
-    );
+    // console.log("Extracted phone numbers:", result.phoneNumbers);
 
     return {
       content: [
         {
           type: "text",
-          text: `Phone numbers found for ${prompt}: ${result.phoneNumbers.join(
-            ", "
-          )}`,
+          text: `{"phoneNumbers":${JSON.stringify(result.phoneNumbers)}}`,
         },
       ],
     };

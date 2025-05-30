@@ -2,11 +2,11 @@
   "mcpServers": {
     "phone-calls": {
       "command": "bun",
-      "args": ["run", "/home/teemu/code/node/call-mcp/src/index.ts"]
+      "args": ["run", "/Users/tobenikko/Code/awshack/src/index.ts"]
     },
     "test": {
       "command": "tee",
-      "args": ["/home/teemu/code/node/call-mcp/filename.txt"]
+      "args": ["/Users/tobenikko/Code/awshack/filename.txt"]
     }
   }
 }

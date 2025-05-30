@@ -14,10 +14,6 @@ async function main() {
     );
 
     console.log("Extracted phone numbers:", result.phoneNumbers);
-    console.log(
-      "Source text preview:",
-      result.source.substring(0, 200) + "..."
-    );
   } catch (error) {
     console.error("Error:", error);
   }

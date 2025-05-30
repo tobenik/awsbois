@@ -18,7 +18,7 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "ai": "^4.3.16",
     "dotenv": "^16.5.0",
-    "zod": "^3.25.42",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "zod": "^3.25.42"
   }
 }

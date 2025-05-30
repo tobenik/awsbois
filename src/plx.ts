@@ -16,7 +16,6 @@ interface PhoneNumberExtractionResponse {
 
 interface ExtractedPhoneNumbers {
   phoneNumbers: string[];
-  source: string;
 }
 
 /**
@@ -47,7 +46,7 @@ export async function queryPerplexityForPhoneNumbers(
             {
               role: "system",
               content:
-                "You are a helpful assistant that searches for information and provides detailed responses with contact information when available.",
+                "You are a search assistant focused on finding phone numbers. Your primary goal is to locate and provide phone numbers for the specific businesses, services, or entities that the user is looking for.",
             },
             {
               role: "user",
@@ -106,11 +105,14 @@ Rules:
 3. If country code is missing, assume US (+1)
 4. Remove any extensions or additional text
 5. Return only valid phone numbers (10 digits for US numbers)
-6. Return the result as a JSON array of strings
+6. Return the result as a VALID JSON object with double quotes only
+7. Use this exact format: {"phoneNumbers": ["phone1", "phone2"]}
 
-Example output: ["+1-555-123-4567", "+1-555-987-6543"]
+IMPORTANT: Use only double quotes in JSON. Never use single quotes.
 
-If no phone numbers are found, return an empty array: []`,
+Example output: {"phoneNumbers": ["+1-555-123-4567", "+1-555-987-6543"]}
+
+If no phone numbers are found, return: {"phoneNumbers": []}`,
             },
             {
               role: "user",
@@ -153,7 +155,6 @@ If no phone numbers are found, return an empty array: []`,
 
     return {
       phoneNumbers,
-      source: perplexityContent,
     };
   } catch (error) {
     console.error("Error in queryPerplexityForPhoneNumbers:", error);
@@ -235,7 +236,6 @@ export async function exampleUsage() {
       openaiApiKey
     );
     console.log("Extracted phone numbers:", result.phoneNumbers);
-    console.log("Source text length:", result.source.length);
     return result;
   } catch (error) {
     console.error("Example usage failed:", error);
