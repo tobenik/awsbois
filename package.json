@@ -16,8 +16,10 @@
     "@browserbasehq/mcp": "^1.0.5",
     "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "@types/express": "^5.0.2",
     "ai": "^4.3.16",
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "node-fetch": "^3.3.2",
     "zod": "^3.25.42"
   }
