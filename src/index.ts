@@ -1,7 +1,8 @@
-import "dotenv/config";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import "dotenv/config";
 import { z } from "zod";
+import { callNumbers } from "./calling";
 import { queryPerplexityForPhoneNumbers } from "./plx.js";
 
 // Create an MCP server
@@ -41,14 +42,31 @@ server.tool("findPhoneNumbers", { prompt: z.string() }, async ({ prompt }) => {
   }
 });
 
-// Add callNumber tool
+// Add callNumber tool to make phone calls using the ElevenLabs API
 server.tool(
-  "callNumber",
-  { number: z.string(), task: z.string() },
-  async ({ number, task }) => {
-    return {
-      content: [{ type: "text", text: `Calling ${number}... ${task}` }],
-    };
+  "callNumbers",
+  { numbers: z.array(z.string()), task: z.string() },
+  async ({ numbers, task }) => {
+    try {
+      const result = await callNumbers(numbers, task);
+      const resultString = JSON.stringify(result, null, 2);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Call completed to ${numbers.join(
+              ", "
+            )} for task: ${task}\n\n${resultString}`,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error making call:", error);
+      return {
+        content: [{ type: "text", text: `Error making call: ${error}` }],
+      };
+    }
   }
 );
 
