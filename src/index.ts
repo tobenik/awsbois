@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import "dotenv/config";
 import { z } from "zod";
-import { callNumbers } from "./calling";
+import { callNumbers } from "./calling.js";
 import { queryPerplexityForPhoneNumbers } from "./plx.js";
 
 // Create an MCP server

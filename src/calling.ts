@@ -1,7 +1,6 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import express from "express";
 
-dotenv.config();
 
 const app = express();
 const port = 3000;
@@ -241,7 +240,7 @@ app.get("/call-callback", (req, res) => {
     }
   }
 });
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+// // 
+// // app.listen(port, () => {
+// //   console.log(`Example app listening on port ${port}`);
+// });
