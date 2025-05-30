@@ -63,7 +63,7 @@ let callJobs: {
 export async function callNumbers(
   numbers: string[],
   task: string
-): Promise<CallResult[]> {
+): Promise<CallResult> {
   console.log(`Calling numbers: ${numbers.join(", ")}... ${task}`);
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
@@ -123,18 +123,14 @@ export async function callNumbers(
     const batchResponse = (await response.json()) as BatchCallResponse;
     console.log(`Batch call submitted successfully - ID: ${batchResponse.id}`);
 
-    const promises = numbers.map((number) => {
-      return new Promise<CallResult>((resolve, reject) => {
-        callJobs = {
-          numbers,
-          task,
-          responses: [],
-          promise: { resolve, reject },
-        };
-      });
+    return new Promise<CallResult>((resolve, reject) => {
+      callJobs = {
+        numbers,
+        task,
+        responses: [],
+        promise: { resolve, reject },
+      };
     });
-
-    return Promise.all(promises);
   } catch (error) {
     console.error("Error submitting batch call:", error);
     throw error;
