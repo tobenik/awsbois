@@ -1,5 +1,5 @@
+import dotenv from "dotenv";
 import express from "express";
-import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -11,10 +11,10 @@ let fetch: any;
 try {
   fetch = globalThis.fetch;
   if (!fetch) {
-    fetch = require('node-fetch');
+    fetch = require("node-fetch");
   }
 } catch (error) {
-  console.error('Failed to load fetch:', error);
+  console.error("Failed to load fetch:", error);
   process.exit(1);
 }
 
@@ -50,79 +50,93 @@ interface CallResult {
   summary: string;
 }
 
-const callJobs: {
-  number: string;
+let callJobs: {
+  numbers: string[];
   task: string;
-  promise: { resolve: (value: CallResult) => void; reject: (reason?: any) => void };
-}[] = [];
+  responses: string[];
+  promise: {
+    resolve: (value: CallResult) => void;
+    reject: (reason?: any) => void;
+  };
+} | null = null;
 
-export async function callNumbers(numbers: string[], task: string): Promise<CallResult[]> {
-  console.log(`Calling numbers: ${numbers.join(', ')}... ${task}`);
+export async function callNumbers(
+  numbers: string[],
+  task: string
+): Promise<CallResult[]> {
+  console.log(`Calling numbers: ${numbers.join(", ")}... ${task}`);
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) {
-    throw new Error('ELEVENLABS_API_KEY environment variable is required');
+    throw new Error("ELEVENLABS_API_KEY environment variable is required");
   }
 
-  const baseUrl = 'https://api.elevenlabs.io';
-  const recipients: BatchCallRecipient[] = numbers.map(number => ({
+  const baseUrl = "https://api.elevenlabs.io";
+  const recipients: BatchCallRecipient[] = numbers.map((number) => ({
     phone_number: number,
     conversation_initiation_client_data: {
       conversation_config_override: {
         agent: {
           prompt: {
-            prompt: `You are an assistant making a phone call. Your task is: ${task}`
+            prompt: `You are an assistant making a phone call. Your task is: ${task}`,
           },
           first_message: `Hello! I'm calling regarding ${task}`,
-          language: "en"
+          language: "en",
         },
         tts: {
-          voice_id: null
-        }
+          voice_id: null,
+        },
       },
       custom_llm_extra_body: {},
       dynamic_variables: {
         task: task,
-        phone_number: number
-      }
-    }
+        phone_number: number,
+      },
+    },
   }));
 
   const batchCallParams: BatchCallRequest = {
     call_name: `Task: ${task} - ${new Date().toISOString()}`,
-    agent_id: 'agent_01jwhcqpnwedd93j10sjh9ajqa', // Replace with your agent ID
-    agent_phone_number_id: 'phnum_01jwhgg7hnf9qvxk89hxcr1m3q', // Replace with your phone number ID
+    agent_id: "agent_01jwhcqpnwedd93j10sjh9ajqa", // Replace with your agent ID
+    agent_phone_number_id: "phnum_01jwhgg7hnf9qvxk89hxcr1m3q", // Replace with your phone number ID
     recipients: recipients,
-    scheduled_time_unix: Math.floor(Date.now() / 1000)
+    scheduled_time_unix: Math.floor(Date.now() / 1000),
   };
 
   try {
     const response = await fetch(`${baseUrl}/v1/convai/batch-calling/submit`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'xi-api-key': apiKey,
+        "Content-Type": "application/json",
+        "xi-api-key": apiKey,
       },
       body: JSON.stringify(batchCallParams),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      throw new Error(
+        `HTTP error! status: ${response.status}, body: ${errorText}`
+      );
     }
 
-    const batchResponse = await response.json() as BatchCallResponse;
+    const batchResponse = (await response.json()) as BatchCallResponse;
     console.log(`Batch call submitted successfully - ID: ${batchResponse.id}`);
 
-    const promises = numbers.map(number => {
+    const promises = numbers.map((number) => {
       return new Promise<CallResult>((resolve, reject) => {
-        callJobs.push({ number, task, promise: { resolve, reject } });
+        callJobs = {
+          numbers,
+          task,
+          responses: [],
+          promise: { resolve, reject },
+        };
       });
     });
 
     return Promise.all(promises);
   } catch (error) {
-    console.error('Error submitting batch call:', error);
+    console.error("Error submitting batch call:", error);
     throw error;
   }
 }
@@ -203,23 +217,32 @@ app.get("/call-callback", (req, res) => {
   const request = req.body as CallCallbackRequest;
 
   if (request.type === "post_call_transcription") {
-    const job = callJobs.find(
-      (job) =>
-        job.number ===
-        request.data.conversation_initiation_client_data.dynamic_variables.phone_number
-    );
-    if (job) {
-      console.log(`Found call job for ${job.number} with task: ${job.task}`);
-      const index = callJobs.findIndex((j) => j.number === job.number);
-      if (index !== -1) {
-        callJobs.splice(index, 1);
+    const phoneNumber =
+      request.data.conversation_initiation_client_data.dynamic_variables
+        .phone_number;
+    if (callJobs?.numbers.includes(phoneNumber)) {
+      console.log(
+        `Found call job for ${callJobs.numbers} with task: ${callJobs.task}`
+      );
+      callJobs.numbers.splice(callJobs.numbers.indexOf(phoneNumber), 1);
+      callJobs.responses.push(
+        phoneNumber +
+          ":\n" +
+          request.data.transcript
+            .map((t) => `${t.role}: ${t.message}`)
+            .join("\n")
+      );
+
+      if (callJobs.numbers.length === 0) {
+        callJobs.promise.resolve({
+          transcript: request.data.transcript.map(
+            (t) => `${t.role}: ${t.message}`
+          ),
+          summary: request.data.analysis.transcript_summary,
+        });
+        callJobs = null;
       }
     }
-
-    job?.promise.resolve({
-      transcript: request.data.transcript.map((t) => `${t.role}: ${t.message}`),
-      summary: request.data.analysis.transcript_summary
-    });
   }
 });
 
