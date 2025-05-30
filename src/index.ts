@@ -16,9 +16,7 @@ server
   .tool(
     "findPhoneNumbers",
     {
-      prompt: z
-        .string()
-        .describe("The text prompt to search for phone numbers"),
+      prompt: z.string().describe("The text prompt to search phone numbers"),
     },
     async ({ prompt }) => {
       const perplexityApiKey = process.env.PERPLEXITY_API_KEY!;
@@ -51,7 +49,8 @@ server
     }
   )
   .update({
-    description: "Finds phone numbers in a given text prompt",
+    description:
+      "Finds phone numbers from the internet according to the given prompt",
   });
 
 // Add callNumber tool to make phone calls using the ElevenLabs API
@@ -86,7 +85,8 @@ server
     }
   )
   .update({
-    description: "Makes phone calls to a list of numbers",
+    description:
+      "Makes phone calls to a list of numbers and executes the given task",
   });
 
 // Start receiving messages on stdin and sending messages on stdout
